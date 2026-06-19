@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repertorio Co-op — Ensayos Colaborativos</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <!-- BACKGROUND GLOW EFFECTS -->
+  <div class="bg-glow bg-glow-cyan"></div>
+  <div class="bg-glow bg-glow-orange"></div>
+  <div class="bg-glow bg-glow-purple"></div>
+
+  <div class="app-container">
+    <!-- BARRA LATERAL IZQUIERDA (SIDEBAR) -->
+    <aside class="sidebar glass">
+      <div class="brand">
+        <div class="logo-circle">∮</div>
+        <div class="brand-text">
+          <span class="brand-name">BandSync Pro</span>
+          <span class="brand-subtitle">Sesión Activa</span>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <button class="nav-pill active" data-tab="repertorio">
+          <span class="nav-icon">🏠</span> Setlist
+        </button>
+        <button class="nav-pill" data-tab="rehearsal">
+          <span class="nav-icon">🎤</span> Sala de Ensayo
+        </button>
+        <button class="nav-pill" data-tab="dictionary">
+          <span class="nav-icon">📖</span> Diccionario
+        </button>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <!-- Tema abierto actual -->
+        <div class="active-song-indicator" id="nav-active-song" style="display: none;">
+          <span class="dot"></span>
+          <div class="song-info">
+            <span class="label">Tema Abierto</span>
+            <strong class="song-name">Yesterday</strong>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- PANEL PRINCIPAL DERECHO -->
+    <div class="main-content">
+      <!-- PESTAÑA 1: REPERTORIO DE TEMAS -->
+      <main id="tab-repertorio" class="tab-content active">
+        <div class="setlist-layout">
+          <div class="setlist-main-content">
+            <div class="page-header">
+              <div class="page-title-area">
+                <h1>Repertorio Studio Pro</h1>
+                <p>Gestiona el setlist de la banda. Organiza temas por estado, dificultad y preparate para la próxima sesión.</p>
+              </div>
+              <div class="page-actions">
+                <!-- User Profile Badge Stitch Style -->
+                <div class="user-profile-badge glass">
+                  <div class="user-avatar">🎙️</div>
+                  <div class="user-info">
+                    <span class="user-name">vino_costa</span>
+                    <span class="user-role">Director</span>
+                  </div>
+                </div>
+                <button id="btn-members-registry" class="btn btn-secondary" onclick="openMembersModal()" style="border: 1px solid rgba(0,229,255,0.35); color: var(--neon-cyan);">
+                  👥 Integrantes
+                </button>
+                <button id="btn-add-song" class="btn btn-primary btn-add-song-pill">
+                  + Agregar Nueva Canción
+                </button>
+              </div>
+            </div>
+
+            <!-- Barra de Filtros y Búsqueda Stitch Style -->
+            <section class="search-filter-bar glass">
+              <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-songs" placeholder="Buscar por título o artista...">
+              </div>
+              
+              <div class="filter-group">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="ready">Listos</button>
+                <button class="filter-btn" data-filter="practicing">En Ensayo</button>
+                <button class="filter-btn" data-filter="todo">Por Aprender</button>
+                <button class="filter-btn dummy-filter" style="margin-left: 20px;"><span class="icon">💿</span> Álbum</button>
+                <button class="filter-btn dummy-filter"><span class="icon">📅</span> Fecha</button>
+              </div>
+            </section>
+
+            <!-- Grilla de Tarjetas -->
+            <section class="setlist-grid" id="setlist-grid">
+              <!-- Renderizado dinámico por JS -->
+            </section>
+          </div>
+
+          <!-- Historial de Grabaciones Globales (Stitch Style) -->
+          <aside class="global-recordings-sidebar glass">
+            <div class="panel-title" style="margin-bottom: 16px;">
+              <span>🎙️</span> Historial de Grabaciones
+            </div>
+            <div class="recordings-list" id="global-recordings-list">
+              <!-- Renderizado dinámico por JS -->
+            </div>
+          </aside>
+        </div>
+      </main>
+
+      <!-- PESTAÑA 2: CUARTO ENSAYO -->
+      <main id="tab-rehearsal" class="tab-content">
+        <div id="rehearsal-room-content"></div>
+      </main>
+
+      <!-- PESTAÑA 3: DICCIONARIO Y ESCALAS -->
+      <main id="tab-dictionary" class="tab-content">
+        <div class="page-header">
+          <div class="page-title-area">
+            <h1 id="dict-title-main">Diccionario de Acordes</h1>
+            <p id="dict-subtitle-main">Busca, visualiza y guarda posiciones de acordes.</p>
+          </div>
+          <div class="page-actions">
+            <!-- Modo de Consulta (Acordes vs Escalas) -->
+            <div class="instrument-select-btns" style="margin-right: 12px;">
+              <button id="btn-dict-mode-chords" class="active" onclick="switchDictMode('chords')">Acordes</button>
+              <button id="btn-dict-mode-scales" onclick="switchDictMode('scales')">Escalas</button>
+            </div>
+            <!-- Instrumento (Guitarra vs Piano) -->
+            <div class="instrument-select-btns">
+              <button id="btn-select-guitar" class="active" onclick="selectInstrument('guitar')">Guitarra</button>
+              <button id="btn-select-piano" onclick="selectInstrument('piano')">Piano</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="dictionary-grid-3col">
+          <!-- Columna 1: Selectores -->
+          <div class="dict-col-selectors">
+            <!-- Bloque de Acordes -->
+            <div id="dict-chords-selectors">
+              <div class="panel-card glass">
+                <div class="panel-title">Nota Raíz</div>
+                <div class="filter-group root-notes-grid" id="dict-chord-root-filters" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+                  <button class="filter-btn active" onclick="filterChordRoot('C')">C</button>
+                  <button class="filter-btn" onclick="filterChordRoot('C#')">C#</button>
+                  <button class="filter-btn" onclick="filterChordRoot('D')">D</button>
+                  <button class="filter-btn" onclick="filterChordRoot('Eb')">Eb</button>
+                  <button class="filter-btn" onclick="filterChordRoot('E')">E</button>
+                  <button class="filter-btn" onclick="filterChordRoot('F')">F</button>
+                  <button class="filter-btn" onclick="filterChordRoot('F#')">F#</button>
+                  <button class="filter-btn" onclick="filterChordRoot('G')">G</button>
+                  <button class="filter-btn" onclick="filterChordRoot('Ab')">Ab</button>
+                  <button class="filter-btn" onclick="filterChordRoot('A')">A</button>
+                  <button class="filter-btn" onclick="filterChordRoot('Bb')">Bb</button>
+                  <button class="filter-btn" onclick="filterChordRoot('B')">B</button>
+                </div>
+              </div>
+
+              <div class="panel-card glass" style="margin-top: 20px;">
+                <div class="panel-title">Tipo de Acorde</div>
+                <div class="chord-types-grid" id="dict-chord-type-filters" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                  <button class="filter-btn active" onclick="filterChordType('')">Mayor</button>
+                  <button class="filter-btn" onclick="filterChordType('m')">Menor</button>
+                  <button class="filter-btn" onclick="filterChordType('maj7')">maj7</button>
+                  <button class="filter-btn" onclick="filterChordType('m7')">m7</button>
+                  <button class="filter-btn" onclick="filterChordType('7')">7</button>
+                  <button class="filter-btn" onclick="filterChordType('dim7')">dim</button>
+                  <button class="filter-btn" onclick="filterChordType('m7b5')">m7b5</button>
+                  <button class="filter-btn" onclick="filterChordType('sus4')">sus4</button>
+                  <button class="filter-btn" onclick="filterChordType('9')">9</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bloque de Escalas (oculto por defecto) -->
+            <div id="dict-scales-selectors" style="display: none; flex-direction: column; gap: 20px;">
+              <div class="panel-card glass">
+                <div class="panel-title">Tónica (Nota Raíz)</div>
+                <select id="scale-root-select" onchange="onScaleChange()">
+                  <option value="0">C (Do)</option>
+                  <option value="1">C# (Do#)</option>
+                  <option value="2">D (Re)</option>
+                  <option value="3">D# (Re#)</option>
+                  <option value="4">E (Mi)</option>
+                  <option value="5">F (Fa)</option>
+                  <option value="6">F# (Fa#)</option>
+                  <option value="7">G (Sol)</option>
+                  <option value="8">G# (Sol#)</option>
+                  <option value="9">A (La)</option>
+                  <option value="10">A# (La#)</option>
+                  <option value="11">B (Si)</option>
+                </select>
+              </div>
+              
+              <div class="panel-card glass">
+                <div class="panel-title">Tipo de Escala</div>
+                <select id="scale-type-select" onchange="onScaleChange()" style="font-size: 13px;">
+                  <optgroup label="Pentatónicas y Blues">
+                    <option value="pentatonic_major">Pentatónica Mayor</option>
+                    <option value="pentatonic_minor">Pentatónica Menor</option>
+                    <option value="blues">Blues Menor</option>
+                  </optgroup>
+                  <optgroup label="Modos Griegos">
+                    <option value="ionian" selected>Jónica (Mayor Natural)</option>
+                    <option value="dorian">Dórica</option>
+                    <option value="phrygian">Frigia</option>
+                    <option value="lydian">Lidia</option>
+                    <option value="mixolydian">Mixolidia</option>
+                    <option value="aeolian">Eólica (Menor Natural)</option>
+                    <option value="locrian">Locria</option>
+                  </optgroup>
+                  <optgroup label="Armonía Moderna y Exóticas">
+                    <option value="whole_tone">Tono Entero (Whole Tone)</option>
+                    <option value="diminished">Disminuida (Octatónica)</option>
+                    <option value="byzantine">Doble Armónica (Bizantina)</option>
+                    <option value="insen">Japonesa (In Sen)</option>
+                    <option value="hungarian">Menor Húngara / Gitana</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna 2: Visualizador Central -->
+          <div class="dict-col-visualizer glass">
+            <div class="chord-detail-header">
+              <div class="chord-info-title">
+                <h2 id="chord-name-title" class="chord-guitar-title">C <span>Acorde</span></h2>
+              </div>
+              <div style="display: flex; gap:12px; align-items:center">
+                <button id="chord-fav-heart" class="chord-favorite-heart" onclick="toggleFavoriteChord()">🤍</button>
+                <button id="btn-play-dict-audio" class="btn btn-primary" onclick="playDictAudio()">
+                  🔊 Escuchar
+                </button>
+              </div>
+            </div>
+
+            <div class="chord-visualizer-card-wrapper">
+              <div class="chord-visualizer-card" id="chord-svg-render-area">
+                <!-- SVG inyectado por chords.js -->
+              </div>
+              <div id="chord-voicing-dots-container"></div>
+            </div>
+
+            <div class="chord-info-details" style="margin-top: 20px;">
+              <h4 id="notes-list-label" style="font-size:11px; text-transform:uppercase; color:var(--text-secondary); margin-bottom:8px;">Notas que lo componen</h4>
+              <div class="notes-display-list" id="chord-notes-list" style="margin-bottom: 16px;">
+                <!-- Dinámico -->
+              </div>
+
+              <div class="tips-panel glass" style="padding: 16px; border-color: rgba(255, 255, 255, 0.04); background: rgba(2, 6, 23, 0.2);">
+                <h4 style="color:var(--text-primary); margin-bottom: 6px; font-size:12px;" id="tips-panel-title">Tips de Práctica</h4>
+                <p style="font-size:12px; color:var(--text-secondary); line-height: 1.5;" id="tips-panel-desc">
+                  Asegúrate de presionar las cuerdas cerca de los trastes metálicos sin tocarlos para evitar el trasteo. Mantén los dedos arqueados para no mutear cuerdas adyacentes.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna 3: Favoritos -->
+          <div class="dict-col-favorites glass">
+            <div class="panel-title" style="margin-bottom: 16px;">❤️ Favoritos</div>
+            <div class="favorites-scroller-vertical" id="favorites-chords-list">
+              <!-- Cargado dinámicamente -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- MODAL DE AGREGAR / EDITAR TEMA -->
+    <div id="modal-add-song" class="modal-backdrop">
+      <div class="modal-content glass">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modal-song-title">Agregar Nuevo Tema</h3>
+          <button class="close-modal-btn">×</button>
+        </div>
+        
+        <form id="song-form">
+          <input type="hidden" id="form-song-id">
+          <!-- Hidden standard form fields to preserve compatibility -->
+          <input type="hidden" id="song-title" value="">
+          <input type="hidden" id="song-artist" value="">
+          <input type="hidden" id="song-bpm" value="120">
+          <input type="hidden" id="song-key" value="C">
+          <input type="hidden" id="song-timesig" value="4/4">
+          <input type="hidden" id="song-status" value="todo">
+          
+          <!-- FICHA TÉCNICA DE INFORMACIÓN COMPACTA Y SIN CUADROS (Inline-Editing) -->
+          <div class="song-meta-panel glass">
+            <div class="meta-field-group">
+              <span id="meta-title" class="meta-inline-edit title-field" data-field="title" contenteditable="false" placeholder="Título del Tema">Yesterday</span>
+              <span class="meta-by-separator">de</span>
+              <span id="meta-artist" class="meta-inline-edit artist-field" data-field="artist" contenteditable="false" placeholder="Artista o Banda">Boyz II Men</span>
+            </div>
+            
+            <div class="meta-badges-group">
+              <div class="meta-badge-inline">
+                <span class="meta-label">BPM</span>
+                <span id="meta-bpm" class="meta-inline-edit value-field" data-field="bpm" contenteditable="false">120</span>
+              </div>
+              <div class="meta-badge-inline">
+                <span class="meta-label">TONO</span>
+                <span id="meta-key" class="meta-inline-select value-field text-cyan" data-field="key">C</span>
+              </div>
+              <div class="meta-badge-inline">
+                <span class="meta-label">COMPÁS</span>
+                <span id="meta-timesig" class="meta-inline-select value-field" data-field="timesig">4/4</span>
+              </div>
+              <div class="meta-badge-inline">
+                <span class="meta-label">ESTADO</span>
+                <span id="meta-status" class="meta-inline-select value-field" data-field="status">Por Aprender</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group form-group-lyrics">
+            <label for="song-lyrics" style="display: none;">Letra y Acordes *</label>
+            
+            <!-- CONTROLES DE IMPORTACIÓN Y CONVERSIÓN -->
+            <div class="lyrics-import-controls" style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; align-items: center;">
+              <input type="file" id="lyrics-file-input" accept=".txt,.chordpro,.pro" style="display: none;">
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('lyrics-file-input').click()" style="padding: 6px 12px; font-size: 11px;">
+                📂 Importar
+              </button>
+              <button type="button" id="btn-convert-lyrics" class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px;">
+                ⚡ Auto-Convertir
+              </button>
+              <div class="editor-mode-toggle" style="margin-left: auto; display: flex; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 9999px; padding: 3px;">
+                <button type="button" id="btn-editor-mode-chords" class="editor-mode-btn active" onclick="setEditorMode('chords')">
+                  🎵 Acordes
+                </button>
+                <button type="button" id="btn-editor-mode-interventions" class="editor-mode-btn" onclick="setEditorMode('interventions')">
+                  👥 Intervenciones
+                </button>
+              </div>
+            </div>
+
+            <p id="editor-hint" style="font-size:11px; color:var(--text-secondary); margin-bottom: 6px;">
+              Escribe con corchetes (ej: [C]Letra). Clic derecho (PC) o 3s (móvil) en acordes para editarlos.
+            </p>
+            <textarea id="song-lyrics" style="display: none;" required></textarea>
+            <div id="editor-rich-lyrics" contenteditable="true" class="editor-rich-lyrics" placeholder="[Bm] Escribe la letra de tu tema aquí con acordes..."></div>
+          </div>
+
+          <div style="display:flex; justify-content: flex-end; gap: 12px; margin-top:24px">
+            <button type="button" class="btn btn-secondary close-modal-btn">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar Tema</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP SELECTOR DE ACORDES PARA EL EDITOR -->
+  <div id="chord-picker-popup" class="popover-picker glass" style="display: none;">
+    <div class="popover-header">
+      <span>Editar Acorde</span>
+      <button type="button" class="close-popover-btn" onclick="document.getElementById('chord-picker-popup').style.display='none'">×</button>
+    </div>
+    <div class="popover-body">
+      <div class="popover-section-title">Nota Raíz</div>
+      <div class="popover-grid roots-grid">
+        <button type="button" class="picker-btn" data-val="C">C</button>
+        <button type="button" class="picker-btn" data-val="C#">C#</button>
+        <button type="button" class="picker-btn" data-val="D">D</button>
+        <button type="button" class="picker-btn" data-val="Eb">Eb</button>
+        <button type="button" class="picker-btn" data-val="E">E</button>
+        <button type="button" class="picker-btn" data-val="F">F</button>
+        <button type="button" class="picker-btn" data-val="F#">F#</button>
+        <button type="button" class="picker-btn" data-val="G">G</button>
+        <button type="button" class="picker-btn" data-val="Ab">Ab</button>
+        <button type="button" class="picker-btn" data-val="A">A</button>
+        <button type="button" class="picker-btn" data-val="Bb">Bb</button>
+        <button type="button" class="picker-btn" data-val="B">B</button>
+      </div>
+      <div class="popover-section-title">Variación</div>
+      <div class="popover-grid suffixes-grid">
+        <button type="button" class="picker-btn" data-val="">Mayor</button>
+        <button type="button" class="picker-btn" data-val="m">m</button>
+        <button type="button" class="picker-btn" data-val="7">7</button>
+        <button type="button" class="picker-btn" data-val="maj7">maj7</button>
+        <button type="button" class="picker-btn" data-val="m7">m7</button>
+        <button type="button" class="picker-btn" data-val="sus4">sus4</button>
+        <button type="button" class="picker-btn" data-val="9">9</button>
+        <button type="button" class="picker-btn" data-val="dim7">dim</button>
+        <button type="button" class="picker-btn" data-val="m7b5">m7b5</button>
+      </div>
+      <div class="popover-custom-row">
+        <input type="text" id="picker-custom-val" placeholder="Custom (ej: C#m9)">
+        <button type="button" id="btn-picker-confirm" class="btn btn-primary">Aplicar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP SELECTOR DE METADATOS INLINE -->
+  <div id="meta-selector-popup" class="popover-picker glass" style="display: none;">
+    <div class="popover-header">
+      <span id="meta-popup-title">Seleccionar</span>
+      <button type="button" class="close-popover-btn" onclick="document.getElementById('meta-selector-popup').style.display='none'">×</button>
+    </div>
+    <div id="meta-popup-options" class="popover-body popover-grid">
+      <!-- Se inyecta dinámicamente según el campo -->
+    </div>
+  </div>
+
+  <!-- MODAL REGISTRO DE INTEGRANTES -->
+  <div id="modal-members" class="modal-backdrop" onclick="if(event.target===this) closeMembersModal()">
+    <div class="modal-content glass" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title">👥 Integrantes de la Banda</h3>
+        <button class="close-modal-btn" onclick="closeMembersModal()">×</button>
+      </div>
+      <div style="padding: 20px;">
+        <!-- Formulario para agregar integrante -->
+        <div class="member-add-form" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-end;">
+          <div style="flex:1; min-width: 120px;">
+            <label style="font-size:11px; color:var(--text-secondary); display:block; margin-bottom:4px;">Nombre</label>
+            <input type="text" id="new-member-name" placeholder="Ej: Henry" style="width:100%; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size:13px;">
+          </div>
+          <div style="flex:1; min-width: 120px;">
+            <label style="font-size:11px; color:var(--text-secondary); display:block; margin-bottom:4px;">Rol / Instrumento</label>
+            <input type="text" id="new-member-role" placeholder="Ej: Voz, Guitarra" style="width:100%; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size:13px;">
+          </div>
+          <div>
+            <label style="font-size:11px; color:var(--text-secondary); display:block; margin-bottom:4px;">Color Neón</label>
+            <div id="member-color-picker" style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="color-swatch active" data-color="#00e5ff" style="background:#00e5ff; box-shadow: 0 0 8px #00e5ff;"></button>
+              <button type="button" class="color-swatch" data-color="#00ff66" style="background:#00ff66;"></button>
+              <button type="button" class="color-swatch" data-color="#ff6d00" style="background:#ff6d00;"></button>
+              <button type="button" class="color-swatch" data-color="#ff007f" style="background:#ff007f;"></button>
+              <button type="button" class="color-swatch" data-color="#ffeb3b" style="background:#ffeb3b;"></button>
+              <button type="button" class="color-swatch" data-color="#bd00ff" style="background:#bd00ff;"></button>
+              <button type="button" class="color-swatch" data-color="#ff334b" style="background:#ff334b;"></button>
+              <button type="button" class="color-swatch" data-color="#ffffff" style="background:#ffffff;"></button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="addBandMember()" style="padding: 8px 16px; white-space: nowrap;">+ Agregar</button>
+        </div>
+        <!-- Lista de integrantes -->
+        <div id="members-list" style="display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto;">
+          <!-- Renderizado dinámico -->
+        </div>
+        <!-- Leyenda colores de coro -->
+        <div style="margin-top:16px; padding: 12px; background: rgba(255,235,59,0.05); border: 1px solid rgba(255,235,59,0.15); border-radius:8px;">
+          <p style="font-size:11px; color:var(--text-secondary); margin:0;">🎤 <strong style="color:#ffeb3b;">Coro / Todos:</strong> Color amarillo neón <span style="color:#ffeb3b;">█</span> — Se aplica automáticamente cuando eliges "Coro" en el editor de intervenciones.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP ASIGNADOR DE INTERVENCIONES -->
+  <div id="intervention-picker-popup" class="popover-picker glass" style="display: none; min-width: 280px;">
+    <div class="popover-header">
+      <span>👥 Asignar Intervención</span>
+      <button type="button" class="close-popover-btn" onclick="closeInterventionPicker()">×</button>
+    </div>
+    <div class="popover-body">
+      <!-- Tipo de participación -->
+      <div class="popover-section-title">Tipo de Participación</div>
+      <div style="display:flex; gap:6px; margin-bottom:12px;">
+        <button type="button" class="intervention-type-btn active" data-type="solo" onclick="selectInterventionType('solo')">Solo</button>
+        <button type="button" class="intervention-type-btn" data-type="duo" onclick="selectInterventionType('duo')">Dúo</button>
+        <button type="button" class="intervention-type-btn" data-type="trio" onclick="selectInterventionType('trio')">Trío</button>
+        <button type="button" class="intervention-type-btn" data-type="coro" onclick="selectInterventionType('coro')">🎤 Coro</button>
+      </div>
+      <!-- Lista de integrantes para seleccionar -->
+      <div class="popover-section-title">Integrantes</div>
+      <div id="intervention-members-list" style="display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; margin-bottom:12px;">
+        <!-- Renderizado dinámico -->
+      </div>
+      <!-- Texto a anotar (opcional) -->
+      <div style="margin-bottom: 12px;">
+        <label style="font-size:11px; color:var(--text-secondary); display:block; margin-bottom:4px;">Nota adicional (opcional)</label>
+        <input type="text" id="intervention-note-text" placeholder="Ej: Toca solo de guitarra, Armonía UUUU..." style="width:100%; padding: 7px 10px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-size:12px; box-sizing:border-box;">
+      </div>
+      <button type="button" class="btn btn-primary" onclick="applyIntervention()" style="width:100%;">✅ Aplicar</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="chords.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
