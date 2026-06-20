@@ -1791,44 +1791,83 @@ function parseLyrics(lyricsText) {
     
     let cleanLine = line;
     let shouldClearActiveVocal = false;
-    
-    // 1. Detectar inicio de anotación (Javi, Deimars: ...
-    const matchOpen = cleanLine.match(/\(([^:)]+):\s*/);
-    if (matchOpen) {
-      const namesStr = matchOpen[1];
-      const namesList = namesStr.split(",").map(n => n.trim());
-      const isCoro = namesList.some(n => n.toLowerCase() === "coro");
-      const isGeneralNote = namesList.some(n => n.toLowerCase() === "nota");
-      
-      let colorStyle;
-      if (isCoro) {
-        colorStyle = "color:#ffeb3b; text-shadow:0 0 8px #ffeb3b80;";
-      } else if (isGeneralNote) {
-        colorStyle = "";
-      } else {
-        colorStyle = buildVocalColorStyle(namesList);
-      }
-      
-      activeVocal = { names: namesList, colorStyle: colorStyle, isGeneralNote: isGeneralNote };
-      
-      // Remover solo la anotación de la línea, preservando acordes o texto previos
-      cleanLine = cleanLine.substring(0, matchOpen.index) + cleanLine.substring(matchOpen.index + matchOpen[0].length);
-    }
-
-    
-    // 2. Detectar fin de anotación )
-    if (activeVocal && cleanLine.endsWith(")")) {
-      cleanLine = cleanLine.substring(0, cleanLine.length - 1);
-      shouldClearActiveVocal = true;
-    }
-    
-    // Extraer comentario si cerramos la anotación activa
     let commentText = "";
-    if (activeVocal && shouldClearActiveVocal) {
-      const lastHyphenIndex = cleanLine.lastIndexOf(" - ");
-      if (lastHyphenIndex !== -1) {
-        commentText = cleanLine.substring(lastHyphenIndex + 3).trim();
-        cleanLine = cleanLine.substring(0, lastHyphenIndex);
+    let lyricTextToColor = "";
+    let hasAnnotation = false;
+    
+    // Guardamos la referencia de activeVocal para usarla al final del map de esta línea
+    let noteActiveVocal = activeVocal;
+    
+    if (!activeVocal) {
+      // 1. Detectar inicio de anotación (Javi, Deimars: ...
+      const matchOpen = cleanLine.match(/\(([^:)]+):\s*/);
+      if (matchOpen) {
+        hasAnnotation = true;
+        const namesStr = matchOpen[1];
+        const namesList = namesStr.split(",").map(n => n.trim());
+        const isCoro = namesList.some(n => n.toLowerCase() === "coro");
+        const isGeneralNote = namesList.some(n => n.toLowerCase() === "nota");
+        
+        let colorStyle;
+        if (isCoro) {
+          colorStyle = "color:#ffeb3b; text-shadow:0 0 8px #ffeb3b80;";
+        } else if (isGeneralNote) {
+          colorStyle = "";
+        } else {
+          colorStyle = buildVocalColorStyle(namesList);
+        }
+        
+        const tempActiveVocal = { names: namesList, colorStyle: colorStyle, isGeneralNote: isGeneralNote };
+        noteActiveVocal = tempActiveVocal;
+        
+        // Verificar si cierra en la misma línea
+        const openParenIndex = matchOpen.index;
+        const closeParenIndex = cleanLine.indexOf(")", openParenIndex + matchOpen[0].length);
+        
+        if (closeParenIndex !== -1) {
+          const innerContent = cleanLine.substring(openParenIndex + matchOpen[0].length, closeParenIndex);
+          const lastHyphenIndex = innerContent.lastIndexOf(" - ");
+          let lyricPart = innerContent;
+          if (lastHyphenIndex !== -1) {
+            lyricPart = innerContent.substring(0, lastHyphenIndex);
+            commentText = innerContent.substring(lastHyphenIndex + 3).trim();
+          }
+          
+          lyricTextToColor = lyricPart;
+          activeVocal = tempActiveVocal;
+          shouldClearActiveVocal = true;
+          
+          cleanLine = cleanLine.substring(0, openParenIndex) + lyricPart + cleanLine.substring(closeParenIndex + 1);
+        } else {
+          const innerContent = cleanLine.substring(openParenIndex + matchOpen[0].length);
+          lyricTextToColor = innerContent;
+          activeVocal = tempActiveVocal;
+          shouldClearActiveVocal = false;
+          
+          cleanLine = cleanLine.substring(0, openParenIndex) + innerContent;
+        }
+      }
+    } else {
+      // 2. Si ya hay una anotación activa de líneas previas
+      hasAnnotation = true;
+      const closeParenIndex = cleanLine.indexOf(")");
+      
+      if (closeParenIndex !== -1) {
+        const innerContent = cleanLine.substring(0, closeParenIndex);
+        const lastHyphenIndex = innerContent.lastIndexOf(" - ");
+        let lyricPart = innerContent;
+        if (lastHyphenIndex !== -1) {
+          lyricPart = innerContent.substring(0, lastHyphenIndex);
+          commentText = innerContent.substring(lastHyphenIndex + 3).trim();
+        }
+        
+        lyricTextToColor = lyricPart;
+        shouldClearActiveVocal = true;
+        
+        cleanLine = lyricPart + cleanLine.substring(closeParenIndex + 1);
+      } else {
+        lyricTextToColor = cleanLine;
+        shouldClearActiveVocal = false;
       }
     }
     
@@ -1851,7 +1890,6 @@ function parseLyrics(lyricsText) {
     
     // 4. Determinar si hay anotación activa para iniciales y colores
     let renderedLyric = finalLyricText;
-    let hasAnnotation = false;
     let initialsHtml = "";
     
     if (activeVocal) {
@@ -1859,22 +1897,29 @@ function parseLyrics(lyricsText) {
       initialsHtml = buildInitialsBadgesHtml(activeVocal.names);
       
       if (activeVocal.isGeneralNote) {
-        // Para notas generales, mantenemos el color blanco por defecto
         renderedLyric = finalLyricText;
       } else {
-        renderedLyric = `<span class="vocal-annotation" style="${activeVocal.colorStyle}">${finalLyricText}</span>`;
+        // Envolver ÚNICAMENTE la sección que canta el integrante (lyricTextToColor)
+        // en lugar de toda la línea final
+        if (lyricTextToColor) {
+          const cleanColorText = lyricTextToColor.replace(/\[[^\]]+\]/g, "");
+          const wrappedSpan = `<span class="vocal-annotation" style="${activeVocal.colorStyle}">${cleanColorText}</span>`;
+          renderedLyric = finalLyricText.replace(cleanColorText, wrappedSpan);
+        } else {
+          renderedLyric = `<span class="vocal-annotation" style="${activeVocal.colorStyle}">${finalLyricText}</span>`;
+        }
       }
     }
     
-    // Construir nota HTML si se extrajo un comentario, guardando referencia antes de limpiar activeVocal
+    // Construir nota HTML si se extrajo un comentario
     let noteHtml = "";
-    if (commentText && activeVocal) {
+    if (commentText && noteActiveVocal) {
       let noteColor;
-      if (activeVocal.isGeneralNote) {
+      if (noteActiveVocal.isGeneralNote) {
         noteColor = "var(--text-muted)";
       } else {
-        noteColor = activeVocal.names[0]
-          ? (activeVocal.names[0].toLowerCase() === "coro" ? "#ffeb3b" : getMemberColor(activeVocal.names[0]))
+        noteColor = noteActiveVocal.names[0]
+          ? (noteActiveVocal.names[0].toLowerCase() === "coro" ? "#ffeb3b" : getMemberColor(noteActiveVocal.names[0]))
           : "#ffeb3b";
       }
       noteHtml = `<div class="vocal-note-row" style="color: ${noteColor};">${commentText}</div>`;
@@ -1884,6 +1929,7 @@ function parseLyrics(lyricsText) {
     if (shouldClearActiveVocal) {
       activeVocal = null;
     }
+
     
     const hasChordsClass = chordsList.length > 0 ? "has-chords" : "";
     const annotatedClass = hasAnnotation ? "notebook-annotation" : "";
