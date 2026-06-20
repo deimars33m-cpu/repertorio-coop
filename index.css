@@ -3417,5 +3417,287 @@ textarea {
   }
 }
 
+/* ==========================================================================
+   PANTALLA COMPLETA & ETIQUETAS HORIZONTALES (SALA DE ENSAYO & EDITOR)
+   ========================================================================== */
+
+/* 1. Modo Pantalla Completa Global */
+body.fullscreen-mode .sidebar {
+  display: none !important;
+}
+
+body.fullscreen-mode .mobile-top-bar {
+  display: none !important;
+}
+
+body.fullscreen-mode .app-container {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+body.fullscreen-mode .main-content {
+  padding: 16px !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+body.fullscreen-mode .rehearsal-header {
+  padding: 8px 16px !important;
+  margin-bottom: 12px !important;
+}
+
+body.fullscreen-mode .rehearsal-song-title {
+  font-size: 20px !important;
+}
+
+body.fullscreen-mode .rehearsal-body {
+  grid-template-columns: 1fr !important;
+  gap: 0 !important;
+  padding-bottom: 20px !important;
+  height: calc(100vh - 100px) !important;
+}
+
+body.fullscreen-mode .sidebar-panel {
+  display: none !important; /* Escondemos el panel de metrónomo/ritmo del layout principal */
+}
+
+body.fullscreen-mode .lyrics-viewer-container {
+  height: calc(100vh - 120px) !important;
+}
+
+/* 2. Menú de Acción Flotante (FAB) */
+.rehearsal-fab-container {
+  display: none; /* Oculto por defecto en modo normal */
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1100;
+}
+
+body.fullscreen-mode .rehearsal-fab-container {
+  display: block; /* Visible solo en pantalla completa */
+}
+
+.fab-main-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gradient-orange);
+  color: #ffffff;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255, 109, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1102;
+  position: relative;
+}
+
+.fab-main-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 24px rgba(255, 109, 0, 0.7);
+}
+
+.rehearsal-fab-container.expanded .fab-main-btn {
+  transform: rotate(135deg); /* Gira el engranaje a cruz */
+  background: rgba(30, 32, 40, 0.95);
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+  color: var(--neon-cyan);
+}
+
+.fab-menu {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  background: rgba(19, 20, 24, 0.95);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 230px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: bottom right;
+}
+
+.rehearsal-fab-container.expanded .fab-menu {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+.fab-menu-title {
+  font-family: var(--font-headline);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  letter-spacing: 0.8px;
+}
+
+.fab-control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fab-control-row span {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+/* 3. Control Global de Etiquetas Horizontales */
+.lyrics-viewer-container.horizontal-labels .lyrics-section-card {
+  grid-template-columns: 1fr !important;
+  border-radius: 10px !important;
+}
+
+.lyrics-viewer-container.horizontal-labels .lyrics-section-sidebar {
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 6px 16px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-right: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  min-height: auto !important;
+  gap: 0 !important;
+}
+
+.lyrics-viewer-container.horizontal-labels .lyrics-section-label {
+  writing-mode: horizontal-tb !important;
+  transform: none !important;
+  padding: 0 !important;
+  font-size: 12px !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+  opacity: 0.75;
+}
+
+.lyrics-viewer-container.horizontal-labels .btn-loop-section {
+  margin-left: auto;
+}
+
+/* 4. Estilos de Botón Loop con Hover y Luces */
+.lyrics-section-sidebar .btn-loop-section {
+  display: none; /* Oculto por defecto */
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  color: var(--neon-cyan);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.lyrics-viewer-container.horizontal-labels .btn-loop-section {
+  margin-top: 0 !important;
+}
+
+/* Mostrar Loop al hacer hover en la tarjeta */
+.lyrics-section-card:hover .btn-loop-section {
+  display: inline-block;
+}
+
+/* Mostrar Loop permanente e iluminado si está activo */
+.lyrics-section-card.active {
+  border: 2px solid var(--neon-cyan) !important;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.35) !important;
+  background: rgba(23, 31, 51, 0.55) !important;
+}
+
+.lyrics-section-card.active .btn-loop-section {
+  display: inline-block !important;
+  background: var(--neon-cyan) !important;
+  color: #131417 !important;
+  border-color: var(--neon-cyan) !important;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+  font-weight: 800;
+}
+
+.lyrics-section-card.active .lyrics-section-sidebar {
+  border-color: rgba(0, 229, 255, 0.25) !important;
+  background: rgba(0, 229, 255, 0.03) !important;
+}
+
+/* 5. Pantalla Completa para Modal de Edición */
+.modal-content.modal-fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  border: none !important;
+  padding: 20px !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content.modal-fullscreen form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.modal-content.modal-fullscreen .form-group-lyrics {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content.modal-fullscreen #editor-rich-lyrics {
+  flex: 1;
+  min-height: 350px !important;
+  max-height: calc(100vh - 280px) !important;
+  overflow-y: auto !important;
+}
+
+.btn-toggle-modal-fullscreen {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  cursor: pointer;
+  margin-left: auto;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-toggle-modal-fullscreen:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+
 
 

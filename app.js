@@ -193,7 +193,9 @@ let state = {
   members: [],
 
   // Modo de edición del editor
-  editorMode: "chords" // "chords" | "interventions"
+  editorMode: "chords", // "chords" | "interventions"
+  horizontalLabels: false,
+  activeSectionIndex: null
 };
 
 // --- INICIALIZACIÓN ---
@@ -1191,6 +1193,9 @@ function renderRehearsalRoom() {
   if (!song) return;
   
   // Renderizar Estructura de la Sala de Ensayo (Layout de dos columnas principales + Transport Bar inferior)
+  const labelsText = state.horizontalLabels ? "Etiquetas: ↔️ Horizontales" : "Etiquetas: ↕️ Verticales";
+  const fullscreenText = document.body.classList.contains("fullscreen-mode") ? "📺 Salir" : "📺 Pantalla Completa";
+
   room.innerHTML = `
     <!-- CABECERA DINÁMICA DE LA CANCIÓN ACTIVA (Estilo Stitch) -->
     <div class="rehearsal-header">
@@ -1211,7 +1216,13 @@ function renderRehearsalRoom() {
         </div>
       </div>
       
-      <div class="header-right" style="display: flex; gap: 12px;">
+      <div class="header-right" style="display: flex; gap: 12px; align-items: center;">
+        <button id="btn-toggle-global-labels" class="btn btn-secondary btn-pill" onclick="toggleGlobalLabelsLayout()" style="border-radius: 20px; font-size: 11px;">
+          ${labelsText}
+        </button>
+        <button class="btn btn-secondary btn-pill btn-toggle-fullscreen" onclick="toggleFullscreenRehearsal()" style="border-radius: 20px; font-size: 11px;">
+          ${fullscreenText}
+        </button>
         <button class="btn btn-outline-cyan btn-pill" onclick="shareActiveSong()" style="border-radius: 20px;">
           🔗 Invitar
         </button>
@@ -1224,7 +1235,7 @@ function renderRehearsalRoom() {
     <!-- CUERPO DE LA SALA DE ENSAYOS: DOS COLUMNAS -->
     <div class="rehearsal-body">
       <!-- Lado Izquierdo: Visor de Letra y Acordes -->
-      <div class="lyrics-viewer-container glass">
+      <div class="lyrics-viewer-container glass ${state.horizontalLabels ? 'horizontal-labels' : ''}">
         <div class="lyrics-viewer-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 12px 20px;">
           <div class="lyrics-song-info" style="display: flex; align-items: center; gap: 8px;">
             <span class="section-label" style="font-family: var(--font-sans); font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;">LETRA Y ACORDES</span>
@@ -1737,11 +1748,9 @@ function renderLyricsBySections(song) {
   const sections = parseLyricsToSections(song.lyrics);
   
   return sections.map((section, idx) => {
-    const isChorus = section.header.includes("CHORUS");
-    const isActive = isChorus && idx === (sections.findIndex(s => s.header.includes("CHORUS")));
-    
+    const isActive = state.activeSectionIndex === idx;
     const activeClass = isActive ? "active" : "";
-    const loopBtn = isChorus ? `<button class="btn-loop-section ${isActive ? 'active' : ''}">Loop</button>` : '';
+    const loopBtn = `<button class="btn-loop-section ${isActive ? 'active' : ''}" onclick="event.stopPropagation(); toggleSectionLoop(${idx})">Loop</button>`;
     
     // Section header shown vertically on the left margin (notebook style)
     const sectionLabel = section.header
@@ -1754,7 +1763,7 @@ function renderLyricsBySections(song) {
     
     return `
       <div class="lyrics-section-card glass ${activeClass}" id="section-card-${idx}">
-        <div class="lyrics-section-sidebar">
+        <div class="lyrics-section-sidebar" onclick="toggleSectionLoop(${idx})">
           <span class="lyrics-section-label">${sectionLabel}</span>
           ${loopBtn}
         </div>
@@ -2110,6 +2119,9 @@ function updateBpm(val) {
   if (bpmDisplay) bpmDisplay.textContent = val;
   if (transportBpmDisplay) transportBpmDisplay.textContent = `${val} BPM`;
   
+  const fabBpmDisplay = document.getElementById("fab-bpm-display");
+  if (fabBpmDisplay) fabBpmDisplay.textContent = val;
+  
   // Si está sonando, reiniciar intervalo para aplicar cambio de velocidad
   if (state.metronome.isPlaying) {
     stopMetronomeTimer();
@@ -2390,6 +2402,18 @@ function toggleAutoScroll() {
     
     state.autoScroll.intervalId = setInterval(() => {
       scrollArea.scrollTop += step;
+      
+      // Control de loop de estrofa activa
+      const activeCard = scrollArea.querySelector(".lyrics-section-card.active");
+      if (activeCard) {
+        const sectionStart = activeCard.offsetTop;
+        const sectionEnd = sectionStart + activeCard.offsetHeight;
+        
+        // Si el tope del scroll llegó al final de la estrofa activa (con margen de 60px)
+        if (scrollArea.scrollTop >= sectionEnd - 60) {
+          scrollArea.scrollTop = sectionStart;
+        }
+      }
       
       if (scrollArea.scrollTop + scrollArea.clientHeight >= scrollArea.scrollHeight - 2) {
         toggleAutoScroll();
@@ -4247,4 +4271,147 @@ function closeMobileDrawers() {
   const overlayMetronome = document.getElementById("mobile-metronome-overlay");
   if (metronome) metronome.classList.remove("open");
   if (overlayMetronome) overlayMetronome.classList.remove("open");
+}
+
+// FUNCIONES DE CONTROL GLOBAL Y PANTALLA COMPLETA
+
+function toggleGlobalLabelsLayout() {
+  state.horizontalLabels = !state.horizontalLabels;
+  
+  // Actualizar la clase en el contenedor
+  const container = document.querySelector(".lyrics-viewer-container");
+  if (container) {
+    if (state.horizontalLabels) {
+      container.classList.add("horizontal-labels");
+    } else {
+      container.classList.remove("horizontal-labels");
+    }
+  }
+  
+  // Actualizar texto del botón en la cabecera
+  const btn = document.getElementById("btn-toggle-global-labels");
+  if (btn) {
+    btn.textContent = state.horizontalLabels ? "Etiquetas: ↔️ Horizontales" : "Etiquetas: ↕️ Verticales";
+  }
+}
+
+function toggleFullscreenRehearsal() {
+  const body = document.body;
+  const isCurrentlyFullscreen = body.classList.contains("fullscreen-mode");
+  
+  if (isCurrentlyFullscreen) {
+    body.classList.remove("fullscreen-mode");
+    
+    // Cerrar el FAB si estaba abierto
+    const fabContainer = document.getElementById("rehearsal-fab-container");
+    if (fabContainer) fabContainer.classList.remove("expanded");
+  } else {
+    body.classList.add("fullscreen-mode");
+    
+    // Si metrónomo o grabación están activos en el estado, sincronizar botones del FAB
+    const fabBtnMetronome = document.getElementById("fab-btn-metronome");
+    if (fabBtnMetronome) {
+      if (state.metronome.isPlaying) {
+        fabBtnMetronome.classList.remove("btn-secondary");
+        fabBtnMetronome.classList.add("btn-primary");
+        fabBtnMetronome.textContent = "⏸ Metrónomo";
+      } else {
+        fabBtnMetronome.classList.remove("btn-primary");
+        fabBtnMetronome.classList.add("btn-secondary");
+        fabBtnMetronome.textContent = "▶ Metrónomo";
+      }
+    }
+    
+    const fabBtnRecord = document.getElementById("fab-btn-record");
+    if (fabBtnRecord) {
+      if (state.recorder.isRecording) {
+        fabBtnRecord.classList.remove("btn-secondary");
+        fabBtnRecord.classList.add("btn-primary");
+        fabBtnRecord.textContent = "⏹ Detener Grab.";
+      } else {
+        fabBtnRecord.classList.remove("btn-primary");
+        fabBtnRecord.classList.add("btn-secondary");
+        fabBtnRecord.textContent = "🎙️ Grabar";
+      }
+    }
+    
+    const fabBpmDisplay = document.getElementById("fab-bpm-display");
+    if (fabBpmDisplay) {
+      fabBpmDisplay.textContent = state.metronome.bpm;
+    }
+  }
+  
+  // Actualizar todos los botones de toggle fullscreen
+  const btns = document.querySelectorAll(".btn-toggle-fullscreen");
+  btns.forEach(btn => {
+    btn.textContent = body.classList.contains("fullscreen-mode") ? "📺 Salir" : "📺 Pantalla Completa";
+  });
+}
+
+function toggleSectionLoop(idx) {
+  // Encontrar todas las tarjetas de estrofas
+  const cards = document.querySelectorAll(".lyrics-section-card");
+  const targetCard = document.getElementById(`section-card-${idx}`);
+  
+  if (!targetCard) return;
+  
+  const isCurrentlyActive = targetCard.classList.contains("active");
+  
+  // Quitar el estado activo de todas primero
+  cards.forEach((card, cardIdx) => {
+    card.classList.remove("active");
+    const btn = card.querySelector(".btn-loop-section");
+    if (btn) {
+      btn.classList.remove("active");
+      btn.textContent = "Loop";
+    }
+  });
+  
+  if (!isCurrentlyActive) {
+    state.activeSectionIndex = idx;
+    targetCard.classList.add("active");
+    const btn = targetCard.querySelector(".btn-loop-section");
+    if (btn) {
+      btn.classList.add("active");
+      btn.textContent = "Loop";
+    }
+    
+    // Hacer scroll automático al inicio de la estrofa seleccionada
+    const scrollArea = document.getElementById("lyrics-scroll-area");
+    if (scrollArea) {
+      scrollArea.scrollTo({
+        top: targetCard.offsetTop,
+        behavior: 'smooth'
+      });
+    }
+  } else {
+    // Si ya estaba activa, se desactiva el loop por completo
+    state.activeSectionIndex = null;
+  }
+}
+
+function toggleFabMenu() {
+  const container = document.getElementById("rehearsal-fab-container");
+  if (container) {
+    container.classList.toggle("expanded");
+  }
+}
+
+function toggleModalFullscreen() {
+  const modalContent = document.querySelector("#modal-add-song .modal-content");
+  const btn = document.querySelector(".btn-toggle-modal-fullscreen");
+  if (modalContent) {
+    modalContent.classList.toggle("modal-fullscreen");
+    if (btn) {
+      if (modalContent.classList.contains("modal-fullscreen")) {
+        btn.innerHTML = "📺 Normal";
+        btn.style.borderColor = "var(--neon-orange)";
+        btn.style.color = "var(--neon-orange)";
+      } else {
+        btn.innerHTML = "📺 Expandir";
+        btn.style.borderColor = "rgba(255, 255, 255, 0.15)";
+        btn.style.color = "var(--text-primary)";
+      }
+    }
+  }
 }

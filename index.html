@@ -288,6 +288,7 @@
       <div class="modal-content glass">
         <div class="modal-header">
           <h3 class="modal-title" id="modal-song-title">Agregar Nuevo Tema</h3>
+          <button type="button" class="btn-toggle-modal-fullscreen" onclick="toggleModalFullscreen()">📺 Expandir</button>
           <button class="close-modal-btn">×</button>
         </div>
         
@@ -491,6 +492,37 @@
       </div>
       <button type="button" class="btn btn-primary" onclick="applyIntervention()" style="width:100%;">✅ Aplicar</button>
     </div>
+  </div>
+
+  <!-- MENÚ ACCIONES FLOTANTES (FAB) EN PANTALLA COMPLETA -->
+  <div id="rehearsal-fab-container" class="rehearsal-fab-container">
+    <div class="fab-menu glass">
+      <div class="fab-menu-title">Control de Ensayo</div>
+      
+      <!-- Fila de Metrónomo -->
+      <div class="fab-control-row">
+        <span>Metrónomo</span>
+        <button id="fab-btn-metronome" class="btn btn-secondary btn-pill" onclick="toggleMetronome()" style="padding: 4px 10px; font-size: 10px;">▶ Metrónomo</button>
+      </div>
+
+      <!-- Fila de Tempo -->
+      <div class="fab-control-row" style="margin-top: 4px;">
+        <span>BPM</span>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <button class="btn btn-secondary" onclick="updateBpm(state.metronome.bpm - 1)" style="width:20px; height:20px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:11px;">-</button>
+          <span id="fab-bpm-display" style="font-family:var(--font-mono); font-size:12px; font-weight:800; color:var(--neon-orange); min-width:24px; text-align:center;">120</span>
+          <button class="btn btn-secondary" onclick="updateBpm(state.metronome.bpm + 1)" style="width:20px; height:20px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:11px;">+</button>
+          <button class="btn btn-outline-cyan" onclick="handleTapTempo()" style="padding:2px 6px; font-size:9px; border-radius:4px;">TAP</button>
+        </div>
+      </div>
+
+      <!-- Fila de Grabación -->
+      <div class="fab-control-row" style="margin-top: 4px; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
+        <span>Grabación</span>
+        <button id="fab-btn-record" class="btn btn-secondary btn-pill" onclick="toggleHeaderRecording()" style="padding: 4px 10px; font-size: 10px;">🎙️ Grabar</button>
+      </div>
+    </div>
+    <button class="fab-main-btn" onclick="toggleFabMenu()" title="Controles de Ensayo">⚙️</button>
   </div>
 
   <!-- Scripts -->
