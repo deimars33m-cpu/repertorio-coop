@@ -790,6 +790,16 @@ function renderNav() {
   } else {
     activeIndicator.style.display = "none";
   }
+  
+  // Update mobile metronome button visibility
+  const btnToggleMetronome = document.getElementById("btn-toggle-metronome");
+  if (btnToggleMetronome) {
+    if (state.currentTab === "rehearsal" && state.activeSongId) {
+      btnToggleMetronome.style.display = "flex";
+    } else {
+      btnToggleMetronome.style.display = "none";
+    }
+  }
 }
 
 // --- EVENTOS Y CONTROLADORES ---
@@ -966,6 +976,9 @@ function switchTab(tabName) {
     if (state.metronome.isPlaying) toggleMetronome();
     if (state.autoScroll.isActive) toggleAutoScroll();
   }
+  
+  // Cerrar paneles móviles al cambiar de pestaña
+  closeMobileDrawers();
   
   renderNav();
 }
@@ -1209,7 +1222,7 @@ function renderRehearsalRoom() {
     </div>
 
     <!-- CUERPO DE LA SALA DE ENSAYOS: DOS COLUMNAS -->
-    <div class="rehearsal-body" style="display: grid; grid-template-columns: 1.7fr 1fr; gap: 32px; align-items: start; width: 100%; grid-column: 1/-1; padding-bottom: 100px;">
+    <div class="rehearsal-body">
       <!-- Lado Izquierdo: Visor de Letra y Acordes -->
       <div class="lyrics-viewer-container glass">
         <div class="lyrics-viewer-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 12px 20px;">
@@ -4203,4 +4216,35 @@ function initInterventionPopupDraggable() {
     document.ontouchend = null;
     document.ontouchmove = null;
   }
+}
+
+// FUNCIONES RESPONSIVAS PARA DISPOSITIVOS MÓVILES
+function toggleMobileSidebar() {
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("mobile-sidebar-overlay");
+  if (sidebar && overlay) {
+    sidebar.classList.toggle("open");
+    overlay.classList.toggle("open");
+  }
+}
+
+function toggleMobileMetronome() {
+  const metronome = document.querySelector(".sidebar-panel");
+  const overlay = document.getElementById("mobile-metronome-overlay");
+  if (metronome && overlay) {
+    metronome.classList.toggle("open");
+    overlay.classList.toggle("open");
+  }
+}
+
+function closeMobileDrawers() {
+  const sidebar = document.querySelector(".sidebar");
+  const overlaySidebar = document.getElementById("mobile-sidebar-overlay");
+  if (sidebar) sidebar.classList.remove("open");
+  if (overlaySidebar) overlaySidebar.classList.remove("open");
+  
+  const metronome = document.querySelector(".sidebar-panel");
+  const overlayMetronome = document.getElementById("mobile-metronome-overlay");
+  if (metronome) metronome.classList.remove("open");
+  if (overlayMetronome) overlayMetronome.classList.remove("open");
 }

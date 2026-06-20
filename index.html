@@ -12,6 +12,17 @@
   <div class="bg-glow bg-glow-orange"></div>
   <div class="bg-glow bg-glow-purple"></div>
 
+  <!-- CABECERA SUPERIOR PARA MÓVILES -->
+  <header class="mobile-top-bar glass">
+    <button id="btn-toggle-sidebar" class="mobile-menu-btn" onclick="toggleMobileSidebar()">☰</button>
+    <div class="mobile-logo">∮ BandSync Pro</div>
+    <button id="btn-toggle-metronome" class="mobile-menu-btn" onclick="toggleMobileMetronome()" style="display: none;">🥁</button>
+  </header>
+
+  <!-- OVERLAYS PARA DISPOSITIVOS MÓVILES -->
+  <div id="mobile-sidebar-overlay" class="mobile-overlay" onclick="toggleMobileSidebar()"></div>
+  <div id="mobile-metronome-overlay" class="mobile-overlay" onclick="toggleMobileMetronome()"></div>
+
   <div class="app-container">
     <!-- BARRA LATERAL IZQUIERDA (SIDEBAR) -->
     <aside class="sidebar glass">

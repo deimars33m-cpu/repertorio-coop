@@ -2023,6 +2023,16 @@ textarea {
   box-shadow: 0 0 24px rgba(0, 255, 102, 0.7) !important;
 }
 
+.rehearsal-body {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 32px;
+  align-items: start;
+  width: 100%;
+  grid-column: 1 / -1;
+  padding-bottom: 100px;
+}
+
 /* 2. Rehearsal Song-Specific Dynamic Header */
 .rehearsal-header {
   grid-column: 1 / -1;
@@ -3189,6 +3199,222 @@ textarea {
   margin-bottom: 8px;
   letter-spacing: 0.5px;
   opacity: 0.85;
+}
+
+/* ==========================================================================
+   DISEÑO RESPONSIVO MÓVIL (PANELES DESLIZANTES & HEADER MÓVIL)
+   ========================================================================== */
+
+/* Cabecera superior oculta por defecto en escritorio */
+.mobile-top-bar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 56px;
+  background: rgba(11, 19, 38, 0.85);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 1000;
+  padding: 0 16px;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.mobile-logo {
+  font-family: var(--font-headline);
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+.mobile-menu-btn {
+  background: transparent;
+  border: none;
+  color: var(--neon-cyan);
+  font-size: 24px;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.mobile-menu-btn:hover {
+  background: rgba(0, 229, 255, 0.1);
+  text-shadow: 0 0 8px var(--neon-cyan);
+}
+
+#btn-toggle-metronome {
+  color: var(--neon-orange);
+  font-size: 22px;
+}
+
+#btn-toggle-metronome:hover {
+  background: rgba(255, 92, 0, 0.1);
+  text-shadow: 0 0 8px var(--neon-orange);
+}
+
+/* Overlays para drawers en móvil */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 990;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Media Query para pantallas móviles (< 768px) */
+@media (max-width: 768px) {
+  .mobile-top-bar {
+    display: flex;
+  }
+  
+  .mobile-overlay {
+    display: block;
+  }
+
+  /* Ajuste de contenedor principal */
+  .app-container {
+    padding-top: 56px; /* Deja espacio para la cabecera */
+    min-height: calc(100vh - 56px);
+  }
+
+  /* Sidebar convertido en Drawer lateral izquierdo */
+  .sidebar {
+    position: fixed !important;
+    top: 56px !important;
+    left: -270px !important; /* Totalmente fuera de pantalla */
+    width: 260px !important;
+    height: calc(100vh - 56px) !important;
+    z-index: 995 !important;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 8px 0 25px rgba(0, 0, 0, 0.6) !important;
+    background: rgba(11, 19, 38, 0.95) !important;
+    padding: 24px 16px !important;
+  }
+
+  .sidebar.open {
+    left: 0 !important;
+  }
+
+  /* Main content toma 100% de la pantalla */
+  .main-content {
+    padding: 20px 16px !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+
+  /* Sala de Ensayo: Ajustes del cuerpo */
+  .rehearsal-body {
+    grid-template-columns: 1fr !important; /* Columna única */
+    gap: 20px !important;
+  }
+
+  /* Metrónomo y ritmos convertidos en Drawer lateral derecho */
+  .sidebar-panel {
+    position: fixed !important;
+    top: 56px !important;
+    right: -340px !important; /* Fuera de pantalla */
+    width: 320px !important;
+    height: calc(100vh - 56px) !important;
+    z-index: 995 !important;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: -8px 0 25px rgba(0, 0, 0, 0.6) !important;
+    background: rgba(11, 19, 38, 0.95) !important;
+    padding: 20px 16px !important;
+    overflow-y: auto !important;
+  }
+
+  .sidebar-panel.open {
+    right: 0 !important;
+  }
+  
+  /* Ajustes en la cabecera dinámica de la sala de ensayo */
+  .rehearsal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px !important;
+  }
+  
+  .rehearsal-header .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .rehearsal-header .header-center {
+    display: none !important; /* Ocultamos el mini metrónomo en móvil */
+  }
+
+  /* Grid del Setlist de canciones */
+  .setlist-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .global-recordings-sidebar {
+    display: none !important; /* Ocultar barra de grabaciones global en móvil por simplicidad */
+  }
+
+  /* Diccionario columna 3 */
+  .dictionary-grid-3col {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+  }
+  
+  /* Botones del header */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .page-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  /* Barra de búsqueda y filtros */
+  .search-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px !important;
+  }
+  
+  .filter-group {
+    flex-wrap: wrap;
+  }
+  
+  .filter-btn {
+    flex-grow: 1;
+    text-align: center;
+  }
+  
+  .dummy-filter {
+    display: none !important; /* Ocultar filtros innecesarios en móvil */
+  }
 }
 
 
